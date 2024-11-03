@@ -1,10 +1,20 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 
 @Component({
   selector: 'app-nested-group',
   template: `
-    <ng-container *ngFor="let group of groups">
-      <div class="group-header">{{ group.key }}</div>
+    <ng-container *ngFor="let group of groups; let i = index">
+      <ng-container *ngIf="group.key">
+        <div class="group-header">{{ group.key }}</div>
+      </ng-container>
 
       <ng-container
         *ngIf="

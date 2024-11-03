@@ -2,6 +2,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { Component, inject, signal, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatChipInputEvent, MatChipEditedEvent } from '@angular/material/chips';
 import { MatTable } from '@angular/material/table';
 
@@ -17,21 +18,21 @@ export interface gCol {
 export class MatTableWrapperComponent {
   @ViewChild('table', { static: true }) table!: MatTable<PeriodicElement>;
 
+  readonly addOnBlur = true;
+  gcolumns: string[] = [];
   columns: string[] = ['no', 'country', 'year', 'athlete', 'sport'];
   dataSource = ELEMENT_DATA;
-  all = ['country', 'year', 'athlete', 'sport'];
+  groupByControl = new FormControl();
+  groupedData: any[] | null = null;
+  groupingKeys: string[] = [];
 
   dropColumns(event: CdkDragDrop<string[]>) {
     const columnName = this.columns[event.previousIndex];
     console.log(`Dropped column: ${columnName}`);
-    this.gColumns.update((gColumns) => {
-      const index = gColumns.findIndex((col) => col.name === columnName);
-      if (index < 0) {
-        this.add({ value: columnName } as any);
-      }
-
-      return [...gColumns];
-    });
+    const index = this.gcolumns.findIndex((col) => col === columnName);
+    if (index < 0) {
+      this.addKey({ value: columnName } as any);
+    }
   }
 
   dropRow(event: CdkDragDrop<string>) {
@@ -40,80 +41,75 @@ export class MatTableWrapperComponent {
       event.previousIndex - this.columns.length,
       event.currentIndex - this.columns.length
     );
-    this.table.renderRows();
+    this.dataSource = [...this.dataSource];
   }
 
-  groupedColumns: string[] = [];
+  removeKey(keyword: string) {
+    const index = this.gcolumns.indexOf(keyword);
+    if (index >= 0) {
+      this.gcolumns.splice(index, 1);
 
-  onColumnDrop(event: CdkDragDrop<string[]>) {
-    if (event.previousContainer !== event.container) {
-      const columnName = event.item.data;
-      this.groupByColumn(columnName);
+      if (this.gcolumns.length) {
+        this.setGrouping(this.gcolumns);
+      } else {
+        this.clearGrouping();
+      }
     }
   }
 
-  groupByColumn(column: string) {
-    this.groupedColumns.push(column);
-    // Implement grouping logic based on `column`
-  }
-
-  removeGroup(column: string) {
-    this.groupedColumns = this.groupedColumns.filter((item) => item !== column);
-    // Remove grouping logic based on `column`
-  }
-
-  readonly addOnBlur = true;
-  readonly separatorKeysCodes = [ENTER, COMMA] as const;
-  readonly gColumns = signal<gCol[]>([
-    // { name: 'Lemon' },
-    // { name: 'Lime' },
-    // { name: 'Apple' },
-  ]);
-  readonly announcer = inject(LiveAnnouncer);
-
-  add(event: MatChipInputEvent): void {
+  addKey(event: MatChipInputEvent): void {
     const value = (event.value || '').trim();
 
-    // Add our gCol
-    if (value) {
-      this.gColumns.update((gColumns) => [...gColumns, { name: value }]);
-    }
-
-    // Clear the input value
-    event!.chipInput!.clear();
-  }
-
-  remove(gCol: gCol): void {
-    this.gColumns.update((gColumns) => {
-      const index = gColumns.indexOf(gCol);
-      if (index < 0) {
-        return gColumns;
-      }
-
-      gColumns.splice(index, 1);
-      this.announcer.announce(`Removed ${gCol.name}`);
-      return [...gColumns];
-    });
-  }
-
-  edit(gCol: gCol, event: MatChipEditedEvent) {
-    const value = event.value.trim();
-
-    // Remove gCol if it no longer has a name
-    if (!value) {
-      this.remove(gCol);
+    if (!this.columns.includes(value.toLowerCase())) {
+      event?.chipInput?.clear();
       return;
     }
 
-    // Edit existing gCol
-    this.gColumns.update((gColumns) => {
-      const index = gColumns.indexOf(gCol);
-      if (index >= 0) {
-        gColumns[index].name = value;
-        return [...gColumns];
+    // Add our keyword
+    if (value) {
+      this.gcolumns.push(value);
+    }
+
+    // Clear the input value
+    event?.chipInput?.clear();
+    if (this.gcolumns.length) this.setGrouping(this.gcolumns);
+  }
+
+  // Function to group data hierarchically based on provided keys
+  groupData(array: any[], keys: string[]): any[] {
+    if (keys.length === 0) return array; // Return original data if no grouping keys
+
+    const key = keys[0];
+    const grouped = array.reduce((result, item) => {
+      const groupKey = item[key.toLowerCase()];
+      if (!result[groupKey]) {
+        result[groupKey] = [];
       }
-      return gColumns;
-    });
+      result[groupKey].push(item);
+      return result;
+    }, {});
+
+    // Recursively group the data for the next level
+    return Object.keys(grouped).map((group) => ({
+      key: group,
+      items: this.groupData(grouped[group], keys.slice(1)),
+    }));
+  }
+
+  // Function to set grouping keys and generate grouped data
+  setGrouping(keys: string[]) {
+    this.groupingKeys = keys;
+    this.groupedData = this.groupData(ELEMENT_DATA, keys);
+  }
+
+  // Function to clear grouping and show default data
+  clearGrouping() {
+    this.groupingKeys = [];
+    this.groupedData = null;
+  }
+
+  isArray(items: any): boolean {
+    return Array.isArray(items);
   }
 }
 
@@ -210,6 +206,27 @@ export const ELEMENT_DATA: PeriodicElement[] = [
     no: 15,
     country: 'India',
     year: 2021,
+    athlete: 'PV Sindhu',
+    sport: 'Badminton',
+  },
+  {
+    no: 16,
+    country: 'India',
+    year: 2021,
+    athlete: 'Neeraj Chopra',
+    sport: 'Javelin Throw',
+  },
+  {
+    no: 17,
+    country: 'India',
+    year: 2023,
+    athlete: 'PV Sindhu',
+    sport: 'Badminton',
+  },
+  {
+    no: 18,
+    country: 'India',
+    year: 2023,
     athlete: 'PV Sindhu',
     sport: 'Badminton',
   },

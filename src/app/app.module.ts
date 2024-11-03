@@ -10,24 +10,18 @@ import {
   ErrorStateMatcher,
   ShowOnDirtyErrorStateMatcher,
 } from '@angular/material/core';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatChipsModule } from '@angular/material/chips';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTableWrapperComponent } from './mat-table-wrapper/mat-table-wrapper.component';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatTableWrapperRowComponent } from './mat-table-wrapper-row/mat-table-wrapper-row.component';
+
 import { NestedGroupComponent } from './nested-group/nested-group.component';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    MatTableWrapperComponent,
-    MatTableWrapperRowComponent,
-    NestedGroupComponent,
-  ],
+  declarations: [AppComponent, MatTableWrapperComponent, NestedGroupComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
