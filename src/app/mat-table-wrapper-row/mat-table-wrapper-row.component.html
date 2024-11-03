@@ -1,0 +1,161 @@
+<div
+  class="header-container"
+  id="drop-columns"
+  cdkDropList
+  (cdkDropListDropped)="dropColumns($event)"
+>
+  <mat-form-field class="example-chip-list">
+    <mat-label>Group by columns</mat-label>
+    <mat-chip-grid #chipGrid aria-label="Enter keywords" [(ngModel)]="gcolumns">
+      <mat-chip-row
+        *ngFor="let keyword of gcolumns"
+        (removed)="removeKey(keyword)"
+      >
+        {{ keyword | titlecase }}
+        <button matChipRemove aria-label="'remove ' + keyword">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-row>
+    </mat-chip-grid>
+    <input
+      placeholder="Drop columns here"
+      [matChipInputFor]="chipGrid"
+      (matChipInputTokenEnd)="addKey($event)"
+    />
+  </mat-form-field>
+</div>
+
+<ng-container *ngIf="!groupedData">
+  <mat-table
+    #table
+    [dataSource]="dataSource"
+    cdkDropList
+    cdkDropListConnectedTo="drop-columns"
+    (cdkDropListDropped)="dropRow($event)"
+    cdkDropListData="dataSource"
+    class="example-boundary mat-elevation-z8"
+  >
+    <ng-container matColumnDef="no">
+      <mat-header-cell *matHeaderCellDef cdkDrag> No. </mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.no }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="country">
+      <mat-header-cell *matHeaderCellDef cdkDrag> Country </mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.country }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="year">
+      <mat-header-cell *matHeaderCellDef cdkDrag>Year</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.year }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="athlete">
+      <mat-header-cell *matHeaderCellDef cdkDrag>Athlete</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.athlete }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="sport">
+      <mat-header-cell *matHeaderCellDef cdkDrag>Sport</mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.sport }}</mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+    <mat-row
+      *matRowDef="let row; columns: columns"
+      cdkDrag
+      [cdkDragData]="row"
+    ></mat-row>
+  </mat-table>
+</ng-container>
+
+<ng-container *ngIf="groupedData">
+  <!-- This table is to create headers for nested tables -->
+  <mat-table
+    [dataSource]="[]"
+    cdkDropList
+    cdkDropListConnectedTo="drop-columns"
+    class="example-boundary mat-elevation-z8"
+  >
+    <ng-container matColumnDef="no">
+      <mat-header-cell *matHeaderCellDef cdkDrag> No. </mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.no }}</mat-cell>
+    </ng-container>
+    <ng-container matColumnDef="country">
+      <mat-header-cell *matHeaderCellDef cdkDrag> Country </mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.country }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="year">
+      <mat-header-cell *matHeaderCellDef cdkDrag> Year </mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.year }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="athlete">
+      <mat-header-cell *matHeaderCellDef cdkDrag> Athlete </mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.athlete }}</mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="sport">
+      <mat-header-cell *matHeaderCellDef cdkDrag> Sport </mat-header-cell>
+      <mat-cell *matCellDef="let element">{{ element.sport }}</mat-cell>
+    </ng-container>
+
+    <!-- <mat-row *matRowDef="let row; columns: columns"></mat-row> -->
+
+    <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+  </mat-table>
+
+  <div *ngFor="let group of groupedData">
+    <div class="group-header">{{ group.key }}</div>
+    <!-- <ng-container *ngFor="let item of group.items"> -->
+    <ng-container *ngIf="isArray(group.items[0].items); else showRow">
+      <!-- Recursive call to render nested groups -->
+      <app-nested-group
+        [groups]="group.items"
+        [columns]="columns"
+      ></app-nested-group>
+    </ng-container>
+    <!-- </ng-container> -->
+
+    <ng-template #showRow>
+      <!-- Render the row -->
+      <!-- <h3>group1</h3> -->
+      <mat-table [dataSource]="group.items" class="example-boundary">
+        <ng-container matColumnDef="no">
+          <mat-header-cell *matHeaderCellDef> No. </mat-header-cell>
+          <mat-cell *matCellDef="let element">{{ element.no }}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="country">
+          <mat-header-cell *matHeaderCellDef> Country </mat-header-cell>
+          <mat-cell *matCellDef="let element">{{ element.country }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="year">
+          <mat-header-cell *matHeaderCellDef> Year </mat-header-cell>
+          <mat-cell *matCellDef="let element">{{ element.year }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="athlete">
+          <mat-header-cell *matHeaderCellDef> Athlete </mat-header-cell>
+          <mat-cell *matCellDef="let element">{{ element.athlete }}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="sport">
+          <mat-header-cell *matHeaderCellDef> Sport </mat-header-cell>
+          <mat-cell *matCellDef="let element">{{ element.sport }}</mat-cell>
+        </ng-container>
+
+        <!-- <mat-header-row *matHeaderRowDef="columns"></mat-header-row> -->
+        <mat-row *matRowDef="let row; columns: columns"></mat-row>
+      </mat-table>
+    </ng-template>
+  </div>
+</ng-container>
+
+<!-- 
+<app-nested-group
+    [groups]="groupedData"
+    [columns]="columns"
+  ></app-nested-group>
+-->

@@ -25,3 +25,7 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+1. reordering the rows ✅
+2. grouping the rows by column -> multi-level grouping
+3. all the grouped by columns to be put in mat-chip-list ✅

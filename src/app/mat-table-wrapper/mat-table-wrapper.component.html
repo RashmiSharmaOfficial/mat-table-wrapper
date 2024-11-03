@@ -1,0 +1,95 @@
+<div
+  class="header-container"
+  id="drop-columns"
+  cdkDropList
+  (cdkDropListDropped)="dropColumns($event)"
+>
+  <mat-form-field class="example-chip-list">
+    <mat-label>Group by Columns</mat-label>
+    <mat-chip-grid #chipGrid aria-label="Enter columns">
+      @for (gCol of gColumns(); track gCol) {
+      <mat-chip-row
+        (removed)="remove(gCol)"
+        [editable]="false"
+        (edited)="edit(gCol, $event)"
+        [aria-description]="'press enter to edit ' + gCol.name"
+      >
+        {{ gCol.name }}
+        <button matChipRemove [attr.aria-label]="'remove ' + gCol.name">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip-row>
+      }
+      <input
+        placeholder="Drop columns"
+        [matChipInputFor]="chipGrid"
+        [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+        [matChipInputAddOnBlur]="addOnBlur"
+        (matChipInputTokenEnd)="add($event)"
+        disabled
+      />
+    </mat-chip-grid>
+  </mat-form-field>
+</div>
+
+<!-- <div cdkDropList cdkDropListConnectedTo="drop-columns" class="example-list">
+  @for (number of all; track number) {
+  <div class="example-box" [cdkDragData]="number" cdkDrag>{{ number }}</div>
+  }
+</div> -->
+
+<mat-table
+  #table
+  [dataSource]="dataSource"
+  cdkDropList
+  cdkDropListConnectedTo="drop-columns"
+  (cdkDropListDropped)="dropRow($event)"
+  cdkDropListData="dataSource"
+  class="example-boundary mat-elevation-z8"
+>
+  <ng-container matColumnDef="no">
+    <mat-header-cell
+      *matHeaderCellDef
+      [cdkDragData]="'no'"
+      cdkDrag
+      cdkDragBoundary=".header-container"
+    >
+      No.
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.no }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="country">
+    <mat-header-cell
+      *matHeaderCellDef
+      [cdkDragData]="'Country'"
+      cdkDrag
+      cdkDragBoundary=".example-boundary"
+    >
+      Country
+    </mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.country }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="year">
+    <mat-header-cell *matHeaderCellDef cdkDrag>Year</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.year }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="athlete">
+    <mat-header-cell *matHeaderCellDef cdkDrag>Athlete</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.athlete }}</mat-cell>
+  </ng-container>
+
+  <ng-container matColumnDef="sport">
+    <mat-header-cell *matHeaderCellDef cdkDrag>Sport</mat-header-cell>
+    <mat-cell *matCellDef="let element">{{ element.sport }}</mat-cell>
+  </ng-container>
+
+  <mat-header-row *matHeaderRowDef="columns"></mat-header-row>
+  <mat-row
+    *matRowDef="let row; columns: columns"
+    cdkDrag
+    [cdkDragData]="row"
+  ></mat-row>
+</mat-table>
